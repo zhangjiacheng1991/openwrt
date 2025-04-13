@@ -82,16 +82,7 @@ jobs:
       run: |
         cd openwrt
         make distclean
-
-      # 修复依赖问题
-    - name: 更新软件源
-      run: |
-        cd openwrt
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-        # 自动修复dns2socks-rust缺失问题
-        [ -d "feeds/packages/net/dns2socks-rust" ] || \
-        git clone https://github.com/openwrt/packages feeds/packages --depth=1
+        
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
