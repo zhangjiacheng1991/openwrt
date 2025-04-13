@@ -15,15 +15,6 @@ name: OpenWrt智能构建系统
 on:
   repository_dispatch:
   workflow_dispatch:
-    inputs:
-      debug:
-        description: '启用调试模式（tmate远程终端）'
-        required: false
-        default: 'true'
-      clean_build:
-        description: '执行全新构建（清除缓存）'
-        required: false
-        default: 'true'
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -75,14 +66,6 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
-  
-      # 可选清理
-    - name: 执行全新构建
-      if: ${{ github.event.inputs.clean_build == 'true' }}
-      run: |
-        cd openwrt
-        make distclean
-        
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
