@@ -10,11 +10,20 @@
 # See /LICENSE for more information.
 #
 
-name: OpenWrt Builder
+name: OpenWrt智能构建系统
 
 on:
   repository_dispatch:
   workflow_dispatch:
+  inputs:
+    debug:
+      description: '启用调试模式（tmate远程终端）'
+      required: true
+      default: 'true'
+    clean_build:
+      description: '执行全新构建（清除缓存）'
+      required: true
+      default: 'true'
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -38,7 +47,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
-    - name: Initialization environment
+    - name: 安装系统依赖
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -52,7 +61,7 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
-    - name: Clone source code
+    - name: 克隆OpenWrt
       working-directory: /workdir
       run: |
         df -hT $PWD
@@ -66,6 +75,23 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
+  
+      # 可选清理
+    - name: 执行全新构建
+      if: ${{ github.event.inputs.clean_build == 'true' }}
+      run: |
+        cd openwrt
+        make distclean
+
+      # 修复依赖问题
+    - name: 更新软件源
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        # 自动修复dns2socks-rust缺失问题
+        [ -d "feeds/packages/net/dns2socks-rust" ] || \
+        git clone https://github.com/openwrt/packages feeds/packages --depth=1
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
